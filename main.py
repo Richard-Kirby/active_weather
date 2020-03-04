@@ -59,7 +59,7 @@ class FanControl(threading.Thread):
                 print("{} pin {} ON for {}" .format(self.name, self.fan_pin,  self.duration))
                 pi.set_PWM_dutycycle(self.fan_pin, self.duty)
                 time.sleep(self.duration)
-                print("{} OFF for {}".format(self.name, self.time_delay))
+                print("{} pin {} OFF for {}".format(self.name, self.fan_pin, self.time_delay))
                 pi.set_PWM_dutycycle(self.fan_pin, 0)
                 time.sleep(self.time_delay)
 
@@ -72,23 +72,23 @@ class FanControl(threading.Thread):
 
 try:
 
-    fan_control1 = FanControl("Every 2 minutes(test)", pi, 21, duty=100, duration=30, time_delay=120)
+    fan_control1 = FanControl("Every 2 minutes(test)", pi, 21, duty=100, duration=120, time_delay=120)
     fan_control1.daemon = True
     fan_control1.start()
 
-    fan_control2 = FanControl("Every hour", pi, 20, duty=255, duration=30, time_delay=60*60)
+    fan_control2 = FanControl("Every hour", pi, 20, duty=255, duration=120, time_delay=60*60)
     fan_control2.daemon = True
     fan_control2.start()
 
-    fan_control3 = FanControl("Every 2 hours", pi, 16, duty=255, duration=60, time_delay=60*60*2)
+    fan_control3 = FanControl("Every 2 hours", pi, 16, duty=255, duration=120, time_delay=60*60*2)
     fan_control3.daemon = True
     fan_control3.start()
 
-    fan_control4 = FanControl("Every 4 hours", pi, 26, duty=255, duration=60, time_delay=60*60*4)
+    fan_control4 = FanControl("Every 4 hours", pi, 26, duty=255, duration=120, time_delay=60*60*4)
     fan_control4.daemon = True
     fan_control4.start()
 
-    fan_control5 = FanControl("Every 8 hours", pi, 19, duty=255, duration=60, time_delay=60*60*8)
+    fan_control5 = FanControl("Every 8 hours", pi, 19, duty=255, duration=120, time_delay=60*60*8)
     fan_control5.daemon = True
     fan_control5.start()
 
