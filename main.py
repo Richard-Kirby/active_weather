@@ -78,7 +78,7 @@ class FanControl(threading.Thread):
 # Set up a few fan controllers such that there are some to choose from.
 
 try:
-    target_rpm = 1800
+    target_rpm = 360
     gain = 0.01
 
     print(target_rpm, gain)
