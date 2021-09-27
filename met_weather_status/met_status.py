@@ -5,7 +5,8 @@ import time
 from datetime import date
 import sys
 
-weather_types =[ # comments are original Met Office text
+weather_types = [
+    # comments are original Met Office text
     "Clear",    # Clear Night
     "Sunny",    # Sunny day
     "PrtCld",  # "Partly cloudy (night)",
@@ -39,7 +40,7 @@ weather_types =[ # comments are original Met Office text
     "Thndr"]
 
 
-# Class that manages the TFL status - sorts out the credentials and makes the queries when asked.
+# Class that manages the Met status - sorts out the credentials and makes the queries when asked.
 class MetWeatherStatus(threading.Thread):
 
     # Get setup, including reading in credentials from the JSON file.  Credentials need to be obtained from TFL.
