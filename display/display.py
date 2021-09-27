@@ -133,7 +133,7 @@ class ClockDisplay(threading.Thread):
                 fc_size.append(self.status_font.getsize(self.weather_text[i]))  # width, height size
 
             day_hor = 20
-            day_vert = 170  # vertical location of day string - adjust forecast by their height
+            day_vert = 160  # vertical location of day string - adjust forecast by their height
 
             vert_loc = [day_vert, day_vert - (fc_size[1][1] - fc_size[0][1]),
                         day_vert - (fc_size[2][1] - fc_size[0][1]) + 20]
@@ -161,7 +161,7 @@ class ClockDisplay(threading.Thread):
         # print("time size", w, h)
         time_offset = int((self.disp.width - w)/2)  # Calculate offset to center text
         print(time_offset, date_offset)
-        self.draw.text((time_offset, 200), time_str, fill=(128, 255, 128), font=self.time_font)
+        self.draw.text((time_offset, 200), time_str, fill=(128, 128, 128), font=self.time_font)
 
     # Writes the display frames to the display.
     def write_display(self):
