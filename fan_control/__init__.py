@@ -1,0 +1,1 @@
+from fan_control.fan_control import FanController

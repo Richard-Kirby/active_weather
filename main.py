@@ -57,7 +57,7 @@ class ActiveWeatherClock(threading.Thread):
         while True:
             current_time = time.localtime()
 
-            # checking whether display needs to be updated
+            # checking if time display needs to be updated
             if self.last_time_displayed is None or (
                     current_time.tm_min % self.display_interval_min == 0
                     and current_time.tm_min != self.last_time_displayed):
@@ -71,21 +71,6 @@ class ActiveWeatherClock(threading.Thread):
                                                     and current_time.tm_min != self.last_forecast)):
                 self.clock_display.met_forecast_queue.put_nowait(self.met_status_thread.five_day_forecast)
                 self.last_forecast = current_time.tm_min  # stays at None until a valid forecast sent
-
-            ''' 
-            # If first starting up, signal via the semaphores.  Also write the time if it meets the regular update time.
-            # Clear the screen first and then write date and time.
-            if self.last_time_semaphore is None or (
-                    current_time.tm_min % self.semaphore_interval_min == 0
-                    and current_time.tm_min != self.last_time_semaphore):
-
-                time_str = time.strftime("%Hh %Mm ", current_time)
-                #print(time_str)
-
-                self.semaphore_flagger.cmd_queue.put_nowait(time_str)
-
-                self.last_time_semaphore = current_time.tm_min
-            '''
 
             time.sleep(2)
 
