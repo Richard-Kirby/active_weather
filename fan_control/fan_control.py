@@ -8,6 +8,7 @@ import os
 import json
 
 
+
 class FanController(threading.Thread):
 
     # Initalise a given pin with a time delay.
@@ -79,8 +80,8 @@ class FanController(threading.Thread):
 
 if __name__ == "__main__":
 
-    fan_dict = {"fan_cmd_pin": 26,
-                "fan_hall_effect_pin": 21,
+    fan_dict = {"fan_cmd_pin": 13,
+                "fan_hall_effect_pin": 16,
                 "fan_min_pwm": 0.20}
 
     fan_controller = FanController(fan_dict)
