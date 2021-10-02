@@ -99,7 +99,7 @@ class MetWeatherStatus(threading.Thread):
                                            "wind_speed_day": day_forecast["S"],
                                            "wind_speed_night": night_forecast["S"]}
 
-                    print("day wind speed", simple_day_forecast["wind_speed_day"], "mph")
+                    #print("day wind speed", simple_day_forecast["wind_speed_day"], "mph")
 
                     ret_five_day_forecast.append(simple_day_forecast)
 

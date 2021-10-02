@@ -52,6 +52,7 @@ class FanController(threading.Thread):
                 # Get the latest commanded RPM from the queue
                 while not self.rpm_queue.empty():
                     target_rpm = self.rpm_queue.get_nowait()
+                    print("Fan Pin {} Target {}".format(self.fan_dict["fan_cmd_pin"], target_rpm))
 
                 actual_rpm = self.tacho_cb.tally() * 30
                 error = target_rpm - actual_rpm
@@ -59,13 +60,13 @@ class FanController(threading.Thread):
                 if target_rpm == 0:
                     current_pwm = 0
                 else:
-                    current_pwm = min(max(current_pwm + self.gain * error, int(fan_dict["fan_min_pwm"] *255)), 255)
+                    current_pwm = min(max(current_pwm + self.gain * error, int(self.fan_dict["fan_min_pwm"] *255)), 255)
 
-                print("Fan Pin {} Target {} PWM Cmd {:.2f} PWM % {:.2f} RPM {}".format(self.fan_dict["fan_cmd_pin"], target_rpm, current_pwm,
-                                                                                current_pwm / 255 * 100, actual_rpm))
+                #print("Fan Pin {} Target {} PWM Cmd {:.2f} PWM % {:.2f} RPM {}".format(self.fan_dict["fan_cmd_pin"], target_rpm, current_pwm,
+                #                                                                current_pwm / 255 * 100, actual_rpm))
                 self.tacho_cb.reset_tally()
                 self.pi.set_PWM_dutycycle(self.fan_dict["fan_cmd_pin"], current_pwm)
-                time.sleep(1)
+                time.sleep(2)
 
         except KeyboardInterrupt:
             print("Keyboard interrupt")

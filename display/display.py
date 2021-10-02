@@ -129,7 +129,10 @@ class ClockDisplay(threading.Thread):
                                 self.five_day_forecast[0]['low_temp'], degree_sign,
                                 self.five_day_forecast[0]['prob_ppt_night'])]
 
-            print("Day wind speed", self.five_day_forecast[0]["wind_speed_day"], "mph")
+            print("Day wind speed", self.five_day_forecast[0]['wind_speed_day'], "mph")
+
+            # fan commanded here to set the wind speed
+            self.set_fan_speed_from_wind_speed(int(self.five_day_forecast[0]["wind_speed_day"]))
 
         # Weather Text drawn here.
         if len(self.weather_text) > 0:
@@ -163,9 +166,7 @@ class ClockDisplay(threading.Thread):
             # pop the first forecast and put it on the end to rotate through a new day each display.
             self.five_day_forecast.append(self.five_day_forecast.pop(0))
 
-        # fan commanded here to set the wind speed
-        self.set_fan_speed_from_wind_speed(self.five_day_forecast[0]["wind_speed_day"])
-
+    # Pro-rata calculation of the RPM to turn fan at for the wind-speed.
     def set_fan_speed_from_wind_speed(self, wind_speed):
 
         if wind_speed < 3:
@@ -179,7 +180,7 @@ class ClockDisplay(threading.Thread):
 
         print("Wind Speed of {} has RPM of {}".format(wind_speed, rpm))
 
-        self.fan_controller.put_nowait(rpm)
+        self.fan_controller.rpm_queue.put_nowait(int(rpm))
 
     # Displays date and time on the screen
     def display_time(self, time_to_display):

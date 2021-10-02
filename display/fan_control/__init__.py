@@ -1,1 +1,1 @@
-from fan_control.fan_control import FanController
+from .fan_control import FanController
