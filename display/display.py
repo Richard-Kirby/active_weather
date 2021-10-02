@@ -8,6 +8,7 @@ import logging
 import spidev as SPI
 from .lib import LCD_1inch28 # Using the round 240 x 240 pixel Waveshare round display
 from PIL import Image, ImageDraw, ImageFont
+from .fan_control import FanController
 
 import time
 import threading
@@ -89,6 +90,19 @@ class ClockDisplay(threading.Thread):
         self.met_forecast_queue = queue.Queue()
         self.five_day_forecast = None
 
+        # Create a Fan Controller to simulate wind.
+        fan_dict = {"fan_cmd_pin": 13,
+                    "fan_hall_effect_pin": 16,
+                    "fan_min_pwm": 0.15,
+                    "min_rpm": 200,
+                    "max_rpm": 2200}
+
+        self.fan_controller = FanController(fan_dict)
+        self.fan_controller.daemon = True
+
+        self.fan_controller.start()
+
+    # Handle the status update from the Met Office.
     def handle_met_status(self):
 
         # old code for ref
@@ -114,6 +128,8 @@ class ClockDisplay(threading.Thread):
                                 self.five_day_forecast[0]['night_weather_type'],
                                 self.five_day_forecast[0]['low_temp'], degree_sign,
                                 self.five_day_forecast[0]['prob_ppt_night'])]
+
+            print("Day wind speed", self.five_day_forecast[0]["wind_speed_day"], "mph")
 
         # Weather Text drawn here.
         if len(self.weather_text) > 0:
@@ -146,6 +162,24 @@ class ClockDisplay(threading.Thread):
             # print(weather_text[0],  )
             # pop the first forecast and put it on the end to rotate through a new day each display.
             self.five_day_forecast.append(self.five_day_forecast.pop(0))
+
+        # fan commanded here to set the wind speed
+        self.set_fan_speed_from_wind_speed(self.five_day_forecast[0]["wind_speed_day"])
+
+    def set_fan_speed_from_wind_speed(self, wind_speed):
+
+        if wind_speed < 3:
+            print("wind_speed <3, set to 0")
+            rpm = 0
+        elif wind_speed > 45:
+            rpm = self.fan_controller.fan_dict["max_rpm"]
+        else:
+            rpm = wind_speed/45 * (self.fan_controller.fan_dict["max_rpm"] - self.fan_controller.fan_dict["min_rpm"]) \
+                  + self.fan_controller.fan_dict["min_rpm"]
+
+        print("Wind Speed of {} has RPM of {}".format(wind_speed, rpm))
+
+        self.fan_controller.put_nowait(rpm)
 
     # Displays date and time on the screen
     def display_time(self, time_to_display):
@@ -189,6 +223,7 @@ class ClockDisplay(threading.Thread):
                 self.image = Image.new("RGB", (self.disp.width, self.disp.height), "BLACK")
                 self.draw = ImageDraw.Draw(self.image)
 
+                # Drawing a circle around the outside.
                 #self.draw.arc((1, 1, 239, 239), 0, 360, fill=(255, 0, 255))
                 #self.draw.arc((2, 2, 238, 238), 0, 360, fill=(255, 0, 255))
                 #self.draw.arc((3, 3, 237, 237), 0, 360, fill=(255, 0, 255))
