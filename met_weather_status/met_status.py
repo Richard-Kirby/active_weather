@@ -5,6 +5,11 @@ import time
 from datetime import date
 import sys
 
+import logging
+
+# create logger
+logger = logging.getLogger(__name__)
+
 weather_types = [
     # comments are original Met Office text
     "Clear",    # Clear Night
@@ -99,18 +104,19 @@ class MetWeatherStatus(threading.Thread):
                                            "wind_speed_day": day_forecast["S"],
                                            "wind_speed_night": night_forecast["S"]}
 
-                    #print("day wind speed", simple_day_forecast["wind_speed_day"], "mph")
+                    #print
+                    # logger.debug("day wind speed {}mph" .format(simple_day_forecast["wind_speed_day"]))
 
                     ret_five_day_forecast.append(simple_day_forecast)
 
             except:
-                print("Problem with dealing with {} from Met Office".format(raw_data))
+                logger.error("Problem with dealing with {} from Met Office".format(raw_data))
                 raise
 
         except:
-            print("Met Get status get failed - random number generator or Internet not avail?")
+            logger.error("Met Get status get failed - random number generator or Internet not avail?")
             error = sys.exc_info()
-            print("*** Error in Met Status: {}".format(error))
+            logger.error("*** Error in Met Status: {}".format(error))
 
         return ret_five_day_forecast
 

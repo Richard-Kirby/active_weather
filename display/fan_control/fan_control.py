@@ -6,6 +6,10 @@ import subprocess
 import queue
 import os
 
+import logging
+# create logger
+logger = logging.getLogger(__name__)
+
 
 # Class that controls computer fans via PWM.  This is for 4 pin fans, which have a PWM pin and hall effect pin for
 # detecting fan speed.
@@ -52,7 +56,7 @@ class FanController(threading.Thread):
                 # Get the latest commanded RPM from the queue
                 while not self.rpm_queue.empty():
                     target_rpm = self.rpm_queue.get_nowait()
-                    print("Fan Pin {} Target {}".format(self.fan_dict["fan_cmd_pin"], target_rpm))
+                    # logger.debug("Fan Pin {} Target {}".format(self.fan_dict["fan_cmd_pin"], target_rpm))
 
                 actual_rpm = self.tacho_cb.tally() * 30
                 error = target_rpm - actual_rpm
@@ -69,7 +73,7 @@ class FanController(threading.Thread):
                 time.sleep(2)
 
         except KeyboardInterrupt:
-            print("Keyboard interrupt")
+            logger.exception("Keyboard interrupt")
 
             # Todo: Can't get back to 0 RPM when shutdown by Ctrl-C
             self.pi.set_PWM_dutycycle(self.fan_dict["fan_cmd_pin"], 0)
@@ -80,7 +84,7 @@ class FanController(threading.Thread):
         finally:
             # Todo: Can't get back to 0 RPM when shutdown by Ctrl-C
             self.pi.set_PWM_dutycycle(self.fan_dict["fan_cmd_pin"], 0)
-            print("finally")
+            logger.error("finally")
             time.sleep(2)
             self.pi.stop()
 

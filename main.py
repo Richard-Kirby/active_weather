@@ -3,11 +3,82 @@ import threading
 import ntplib
 import sys
 import socket
+import logging
+import logging.config
 
+# create logger
+log_dict = {
+    'version': 1,
+    'formatters': {
+        'detailed': {
+            'class': 'logging.Formatter',
+            'format': '%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'mplog.log',
+            'mode': 'w',
+            'formatter': 'detailed',
+        },
+        'foofile': {
+            'class': 'logging.FileHandler',
+            'filename': 'mplog-foo.log',
+            'mode': 'w',
+            'formatter': 'detailed',
+        },
+        'errors': {
+            'class': 'logging.FileHandler',
+            'filename': 'mplog-errors.log',
+            'mode': 'w',
+            'level': 'ERROR',
+            'formatter': 'detailed',
+        },
+    },
+    'loggers': {
+        'foo': {
+            'handlers': ['foofile']
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['console', 'file', 'errors']
+    },
+}
+
+logging.config.dictConfig(log_dict)
+
+# create file handler which logs even debug messages
+logger = logging.getLogger(__name__)
+
+# Project packages
 import display
 import met_weather_status
 
+'''
 
+logging.config.
+fh = logging.FileHandler('logger.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
+'''
+
+
+# Main class for the Active Weather Clock.  Relies on several other packages to implement.
 class ActiveWeatherClock(threading.Thread):
 
     def __init__(self, display_interval_min):
@@ -33,14 +104,14 @@ class ActiveWeatherClock(threading.Thread):
                 # print (ntp_response.offset)
 
                 if ntp_response.offset < 2:
-                    print("Synced @ {}" .format(i))
+                    logger.debug("Synced @ {}" .format(i))
                     break
 
             except ntplib.NTPException:
-                print("NTP Exception ", sys.exc_info())
+                logger.error("NTP Exception ", sys.exc_info())
 
             except socket.gaierror:
-                print("socket.gaierror exception - can be a problem on first boot:", sys.exc_info())
+                logger.error("socket.gaierror exception - can be a problem on first boot:", sys.exc_info())
 
             time.sleep(1)
 
@@ -77,7 +148,7 @@ class ActiveWeatherClock(threading.Thread):
 
 if __name__ == "__main__":
 
-    print("main program")
+    logger.debug("main program")
 
     active_weather_clock = ActiveWeatherClock(1)
     active_weather_clock.daemon = True

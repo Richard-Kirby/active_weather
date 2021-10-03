@@ -4,7 +4,7 @@
 import os
 import sys 
 import time
-import logging
+
 import spidev as SPI
 from .lib import LCD_1inch28 # Using the round 240 x 240 pixel Waveshare round display
 from PIL import Image, ImageDraw, ImageFont
@@ -14,13 +14,17 @@ import time
 import threading
 import queue
 
+import logging
+# create logger
+logger = logging.getLogger(__name__)
+
+
 # Raspberry Pi pin configuration:
 RST = 27
 DC = 25
 BL = 18
 bus = 0 
 device = 0 
-logging.basicConfig(level=logging.DEBUG)
 
 icon_dict = {
     "Clear" : './display/icons/Sunny.png', # Clear Night
@@ -72,8 +76,6 @@ class ClockDisplay(threading.Thread):
 
         # Clear display.
         self.disp.clear()
-
-        logging.info("icon and then draw circle")
 
         main_font = './display/HammersmithOne-Regular.ttf'
 
@@ -129,7 +131,7 @@ class ClockDisplay(threading.Thread):
                                 self.five_day_forecast[0]['low_temp'], degree_sign,
                                 self.five_day_forecast[0]['prob_ppt_night'])]
 
-            print("Day wind speed", self.five_day_forecast[0]['wind_speed_day'], "mph")
+            #logger.debug("Day wind speed {} mph" .format(self.five_day_forecast[0]['wind_speed_day']))
 
             # fan commanded here to set the wind speed
             self.set_fan_speed_from_wind_speed(int(self.five_day_forecast[0]["wind_speed_day"]))
@@ -137,7 +139,7 @@ class ClockDisplay(threading.Thread):
         # Weather Text drawn here.
         if len(self.weather_text) > 0:
 
-            print(self.five_day_forecast[0]['day_weather_type'])
+            #logger.debug(self.five_day_forecast[0]['day_weather_type'])
 
             icon_img = icon_dict[self.five_day_forecast[0]['day_weather_type']]
 
@@ -170,7 +172,7 @@ class ClockDisplay(threading.Thread):
     def set_fan_speed_from_wind_speed(self, wind_speed):
 
         if wind_speed < 3:
-            print("wind_speed <3, set to 0")
+            logger.info("wind_speed <3, set to 0")
             rpm = 0
         elif wind_speed > 45:
             rpm = self.fan_controller.fan_dict["max_rpm"]
@@ -178,7 +180,7 @@ class ClockDisplay(threading.Thread):
             rpm = wind_speed/45 * (self.fan_controller.fan_dict["max_rpm"] - self.fan_controller.fan_dict["min_rpm"]) \
                   + self.fan_controller.fan_dict["min_rpm"]
 
-        print("Wind Speed of {} has RPM of {}".format(wind_speed, rpm))
+        logger.debug("Wind Speed of {} has RPM of {}".format(wind_speed, int(rpm)))
 
         self.fan_controller.rpm_queue.put_nowait(int(rpm))
 
@@ -194,7 +196,7 @@ class ClockDisplay(threading.Thread):
         w, h = self.time_font.getsize(time_str)
         # print("time size", w, h)
         time_offset = int((self.disp.width - w)/2)  # Calculate offset to center text
-        print(time_offset, date_offset)
+        # logger.info(time_offset, date_offset)
         self.draw.text((time_offset, 200), time_str, fill=(128, 128, 128), font=self.time_font)
 
     # Writes the display frames to the display.
