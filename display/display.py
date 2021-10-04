@@ -35,7 +35,7 @@ icon_dict = {
     "Mist": './display/icons/weather_vane.png',
     "Fog": './display/icons/weather_vane.png',
     "Cloudy":'./display/icons/Cloudy.png',
-    "Overcs":'./display/icons/weather_vane.png',
+    "Overcst":'./display/icons/Overcst.png',
     "L rain": './display/icons/L_rain.png',  # "Light rain shower (night)",
     "L shwr": './display/icons/L_shwr.png',  # Light rain shower (day)",
     "Drizzl": './display/icons/weather_vane.png',
@@ -79,8 +79,8 @@ class ClockDisplay(threading.Thread):
 
         main_font = './display/HammersmithOne-Regular.ttf'
 
-        self.date_font = ImageFont.truetype(main_font, 25)
-        self.time_font = ImageFont.truetype(main_font, 35)
+        self.date_font = ImageFont.truetype(main_font, 20)
+        self.time_font = ImageFont.truetype(main_font, 40)
         self.location_font = ImageFont.truetype(main_font, 30)
         self.status_font = ImageFont.truetype(main_font, 20)
 
@@ -121,7 +121,9 @@ class ClockDisplay(threading.Thread):
         if self.five_day_forecast is not None and len(self.five_day_forecast) == 5:
             degree_sign = u"\N{DEGREE SIGN}"
 
-            self.weather_text = [self.five_day_forecast[0]['date'][:3],"{} {}{}C {}%".format(
+            self.weather_text = [self.five_day_forecast[0]['date'][:3],
+
+                                 "{} {}{}C {}%".format(
                                 self.five_day_forecast[0]['day_weather_type'],
                                 self.five_day_forecast[0]['high_temp'], degree_sign,
                                 self.five_day_forecast[0]['prob_ppt_day']),
@@ -129,7 +131,10 @@ class ClockDisplay(threading.Thread):
                             "{} {}{}C {}%".format(
                                 self.five_day_forecast[0]['night_weather_type'],
                                 self.five_day_forecast[0]['low_temp'], degree_sign,
-                                self.five_day_forecast[0]['prob_ppt_night'])]
+                                self.five_day_forecast[0]['prob_ppt_night']),
+
+                            "Wind {}mph".format(self.five_day_forecast[0]["wind_speed_day"])
+                            ]
 
             #logger.debug("Day wind speed {} mph" .format(self.five_day_forecast[0]['wind_speed_day']))
 
@@ -144,25 +149,24 @@ class ClockDisplay(threading.Thread):
             icon_img = icon_dict[self.five_day_forecast[0]['day_weather_type']]
 
             weather_icon = Image.open(icon_img)
-            self.image.paste(weather_icon, (88, 88))
+            self.image.paste(weather_icon, (88, 155))
             self.draw = ImageDraw.Draw(self.image)
 
             fc_size = []
 
-            for i in range(3):
-                fc_size.append(self.status_font.getsize(self.weather_text[i]))  # width, height size
-
+            vert_loc = [80]
             day_hor = 20
-            day_vert = 160  # vertical location of day string - adjust forecast by their height
 
-            vert_loc = [day_vert, day_vert - (fc_size[1][1] - fc_size[0][1]),
-                        day_vert - (fc_size[2][1] - fc_size[0][1]) + 20]
+            for i in range(1, len(self.weather_text)):
+                txt_size = self.status_font.getsize(self.weather_text[i-1])
+                vert_loc.append(vert_loc[i-1] + txt_size[1] + txt_size[1]/4)
 
-            fore_hor = day_hor + fc_size[0][0] + 5
+            fore_hor = day_hor + self.status_font.getsize(self.weather_text[0])[0] + 5
 
-            self.draw.text((day_hor, vert_loc[0]), self.weather_text[0], fill=(128, 255, 128), font=self.status_font)
-            self.draw.text((fore_hor, vert_loc[1]), self.weather_text[1], fill=(128, 255, 128), font=self.status_font)
-            self.draw.text((fore_hor, vert_loc[2]), self.weather_text[2], fill=(128, 255, 128), font=self.status_font)
+            self.draw.text((day_hor, vert_loc[0]), self.weather_text[0], fill=(20, 142, 40), font=self.status_font)
+            self.draw.text((fore_hor, vert_loc[0]), self.weather_text[1], fill=(20, 142, 40), font=self.status_font)
+            self.draw.text((fore_hor, vert_loc[1]), self.weather_text[2], fill=(20, 142, 40), font=self.status_font)
+            self.draw.text((fore_hor, vert_loc[2]), self.weather_text[3], fill=(20, 142, 40), font=self.status_font)
 
             # print(weather_text[0],  )
             # pop the first forecast and put it on the end to rotate through a new day each display.
@@ -186,18 +190,18 @@ class ClockDisplay(threading.Thread):
 
     # Displays date and time on the screen
     def display_time(self, time_to_display):
-        date_str = time.strftime("%a %d %m %Y", time_to_display)
+        date_str = time.strftime("%a %d %m", time_to_display)
         w, h = self.date_font.getsize(date_str)
         # print("date size", w, h)
         date_offset = int((self.disp.width - w)/2)  # Calculate offset to center text.
-        self.draw.text((date_offset, 50), date_str, fill=(128, 255, 128), font=self.date_font)
+        self.draw.text((date_offset, 55), date_str, fill=(160, 160, 160), font=self.date_font)
 
         time_str = time.strftime("%H:%M", time_to_display)
         w, h = self.time_font.getsize(time_str)
         # print("time size", w, h)
         time_offset = int((self.disp.width - w)/2)  # Calculate offset to center text
         # logger.info(time_offset, date_offset)
-        self.draw.text((time_offset, 200), time_str, fill=(128, 128, 128), font=self.time_font)
+        self.draw.text((time_offset, 15), time_str, fill=(255, 255, 255), font=self.time_font)
 
     # Writes the display frames to the display.
     def write_display(self):

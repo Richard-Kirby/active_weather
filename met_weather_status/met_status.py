@@ -20,7 +20,7 @@ weather_types = [
     "Mist",
     "Fog",
     "Cloudy",
-    "Overcs",
+    "Overcst",
     "L rain",  # "Light rain shower (night)",
     "L shwr",  # Light rain shower (day)",
     "Drizzl",
