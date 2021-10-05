@@ -27,37 +27,37 @@ bus = 0
 device = 0 
 
 icon_dict = {
-    "Clear" : './display/icons/Sunny.png', # Clear Night
-    "Sunny" : './display/icons/Sunny.png', # Sunny day
-    "PrtCld": './display/icons/PrtCld.png', # "Partly cloudy (night)",
-    "PrtCLd":  './display/icons/PrtCld.png', # "Partly cloudy (day)",
-    "Not used" : './display/icons/weather_vane.png',
-    "Mist": './display/icons/weather_vane.png',
-    "Fog": './display/icons/weather_vane.png',
-    "Cloudy":'./display/icons/Cloudy.png',
-    "Overcst":'./display/icons/Overcst.png',
-    "L rain": './display/icons/L_rain.png',  # "Light rain shower (night)",
-    "L shwr": './display/icons/L_shwr.png',  # Light rain shower (day)",
-    "Drizzl": './display/icons/weather_vane.png',
-    "L rain": './display/icons/L_rain.png',  # "Light rain",
-    "Hvy sh": './display/icons/H_rain.png',  # "Heavy rain shower (night)",
-    "Hvy sh": './display/icons/H_rain.png',  # "Heavy rain shower (day)",
-    "H rain": './display/icons/H_rain.png',
-    "Slt sh": './display/icons/weather_vane.png',  # "Sleet shower (night)",
-    "Slt sh": './display/icons/weather_vane.png',  # "Sleet shower (day)",
-    "Sleet": './display/icons/weather_vane.png',
-    "Hail sh": './display/icons/weather_vane.png',  # Hail shower (night)",
-    "Hail sh": './display/icons/weather_vane.png',  # "Hail shower (day)",
-    "Hail": './display/icons/weather_vane.png',
-    "L snw sh": './display/icons/weather_vane.png',  # "Light snow shower (night)",
-    "L snw sh": './display/icons/weather_vane.png',  # "Light snow shower (day)",
-    "L snw": './display/icons/weather_vane.png',
-    "H snw sh": './display/icons/weather_vane.png',  # "Heavy snow shower (night)",
-    "H snw sh": './display/icons/weather_vane.png',  # "Heavy snow shower (day)",
-    "H snw": './display/icons/weather_vane.png',
-    "Thndr sh": './display/icons/weather_vane.png',  # "Thunder shower (night)",
-    "Thndr sh": './display/icons/weather_vane.png',  # "Thunder shower (day)",
-    "Thndr": './display/icons/weather_vane.png'
+    "Clear" :   {"icon":'./display/icons/Sunny.png', "mist": 0},
+    "Sunny" :   {"icon":'./display/icons/Sunny.png', "mist": 0},
+    "PrtCld":   {"icon":'./display/icons/PrtCld.png',"mist": 0},
+    "PrtCLd":   {"icon":'./display/icons/PrtCld.png', "mist": 0},
+    "Not used": {"icon":'./display/icons/weather_vane.png',"mist": 0},
+    "Mist":     {"icon":'./display/icons/weather_vane.png',"mist": 0},
+    "Fog":      {"icon":'./display/icons/weather_vane.png',"mist": 0},
+    "Cloudy":   {"icon":'./display/icons/Cloudy.png',"mist": 0},
+    "Overcst":  {"icon":'./display/icons/Overcst.png',"mist": 0},
+    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 0}, # "Light rain shower (night)",
+    "L shwr":   {"icon":'./display/icons/L_shwr.png', "mist": 0},  # Light rain shower (day)",
+    "Drizzl":   {"icon":'./display/icons/weather_vane.png',"mist": 0},
+    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 0}, # "Light rain",
+    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": 0}, # "Heavy rain shower (night)",
+    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": 0}, # "Heavy rain shower (day)",
+    "H rain":   {"icon":'./display/icons/H_rain.png', "mist": 0},
+    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0}, # "Sleet shower (night)",
+    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0},# "Sleet shower (day)",
+    "Sleet":    {"icon":'./display/icons/weather_vane.png', "mist": 0},
+    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0}, # Hail shower (night)",
+    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0},  # "Hail shower (day)",
+    "Hail":     {"icon": './display/icons/weather_vane.png', "mist": 0},
+    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Light snow shower (night)",
+    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Light snow shower (day)",
+    "L snw":    {"icon": './display/icons/weather_vane.png', "mist": 0},
+    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Heavy snow shower (night)",
+    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0},  # "Heavy snow shower (day)",
+    "H snw":    {"icon": './display/icons/weather_vane.png', "mist": 0},
+    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0},  # "Thunder shower (night)",
+    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0},  # "Thunder shower (day)",
+    "Thndr":    {"icon": './display/icons/weather_vane.png', "mist": 0}
 }
 
 
@@ -146,7 +146,7 @@ class ClockDisplay(threading.Thread):
 
             #logger.debug(self.five_day_forecast[0]['day_weather_type'])
 
-            icon_img = icon_dict[self.five_day_forecast[0]['day_weather_type']]
+            icon_img = icon_dict[self.five_day_forecast[0]['day_weather_type']]['icon']
 
             weather_icon = Image.open(icon_img)
             self.image.paste(weather_icon, (88, 155))
