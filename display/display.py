@@ -9,6 +9,7 @@ import spidev as SPI
 from .lib import LCD_1inch28 # Using the round 240 x 240 pixel Waveshare round display
 from PIL import Image, ImageDraw, ImageFont
 from .fan_control import FanController
+from .mist_control import MistController
 
 import time
 import threading
@@ -29,36 +30,39 @@ device = 0
 icon_dict = {
     "Clear" :   {"icon":'./display/icons/Sunny.png', "mist": 0},
     "Sunny" :   {"icon":'./display/icons/Sunny.png', "mist": 0},
-    "PrtCld":   {"icon":'./display/icons/PrtCld.png',"mist": 0},
-    "PrtCLd":   {"icon":'./display/icons/PrtCld.png', "mist": 0},
+    "PrtCld":   {"icon":'./display/icons/PrtCld.png',"mist": 0.4},
+    "PrtCLd":   {"icon":'./display/icons/PrtCld.png', "mist": 0.4},
     "Not used": {"icon":'./display/icons/weather_vane.png',"mist": 0},
-    "Mist":     {"icon":'./display/icons/weather_vane.png',"mist": 0},
-    "Fog":      {"icon":'./display/icons/weather_vane.png',"mist": 0},
-    "Cloudy":   {"icon":'./display/icons/Cloudy.png',"mist": 0},
-    "Overcst":  {"icon":'./display/icons/Overcst.png',"mist": 0},
-    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 0}, # "Light rain shower (night)",
-    "L shwr":   {"icon":'./display/icons/L_shwr.png', "mist": 0},  # Light rain shower (day)",
-    "Drizzl":   {"icon":'./display/icons/weather_vane.png',"mist": 0},
-    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 0}, # "Light rain",
-    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": 0}, # "Heavy rain shower (night)",
-    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": 0}, # "Heavy rain shower (day)",
-    "H rain":   {"icon":'./display/icons/H_rain.png', "mist": 0},
-    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0}, # "Sleet shower (night)",
-    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0},# "Sleet shower (day)",
-    "Sleet":    {"icon":'./display/icons/weather_vane.png', "mist": 0},
-    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0}, # Hail shower (night)",
-    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0},  # "Hail shower (day)",
-    "Hail":     {"icon": './display/icons/weather_vane.png', "mist": 0},
-    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Light snow shower (night)",
-    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Light snow shower (day)",
-    "L snw":    {"icon": './display/icons/weather_vane.png', "mist": 0},
-    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0}, # "Heavy snow shower (night)",
-    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0},  # "Heavy snow shower (day)",
-    "H snw":    {"icon": './display/icons/weather_vane.png', "mist": 0},
-    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0},  # "Thunder shower (night)",
-    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0},  # "Thunder shower (day)",
-    "Thndr":    {"icon": './display/icons/weather_vane.png', "mist": 0}
+    "Mist":     {"icon":'./display/icons/weather_vane.png',"mist": 0.6},
+    "Fog":      {"icon":'./display/icons/weather_vane.png',"mist": 0.6},
+    "Cloudy":   {"icon":'./display/icons/Cloudy.png',"mist": 0.6},
+    "Overcst":  {"icon":'./display/icons/Overcst.png',"mist": 1},
+    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 1}, # "Light rain shower (night)",
+    "L shwr":   {"icon":'./display/icons/L_shwr.png', "mist": 0.6},  # Light rain shower (day)",
+    "Drizzl":   {"icon":'./display/icons/weather_vane.png',"mist": 1},
+    "L rain":   {"icon":'./display/icons/L_rain.png', "mist": 1}, # "Light rain",
+    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": .6}, # "Heavy rain shower (night)",
+    "Hvy sh":   {"icon":'./display/icons/H_rain.png', "mist": .6}, # "Heavy rain shower (day)",
+    "H rain":   {"icon":'./display/icons/H_rain.png', "mist": 1},
+    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0.6}, # "Sleet shower (night)",
+    "Slt sh":   {"icon":'./display/icons/weather_vane.png', "mist": 0.6},# "Sleet shower (day)",
+    "Sleet":    {"icon":'./display/icons/weather_vane.png', "mist": 0.6},
+    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0.6}, # Hail shower (night)",
+    "Hail sh":  {"icon":'./display/icons/weather_vane.png', "mist": 0.6},  # "Hail shower (day)",
+    "Hail":     {"icon": './display/icons/weather_vane.png', "mist": 0.6},
+    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0.6}, # "Light snow shower (night)",
+    "L snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0.6}, # "Light snow shower (day)",
+    "L snw":    {"icon": './display/icons/weather_vane.png', "mist": 1},
+    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0.6}, # "Heavy snow shower (night)",
+    "H snw sh": {"icon": './display/icons/weather_vane.png', "mist": 0.6},  # "Heavy snow shower (day)",
+    "H snw":    {"icon": './display/icons/weather_vane.png', "mist": 1.0},
+    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0.6},  # "Thunder shower (night)",
+    "Thndr sh": {"icon": './display/icons/weather_vane.png',"mist": 0.6},  # "Thunder shower (day)",
+    "Thndr":    {"icon": './display/icons/weather_vane.png', "mist": 1}
 }
+
+min_wind_speed = 3 # 0 RPM below this in mph.
+max_wind_speed = 25  # maximum fan output above this in mph.
 
 
 # Clock Display Class - takes care of the display.
@@ -104,6 +108,17 @@ class ClockDisplay(threading.Thread):
 
         self.fan_controller.start()
 
+
+        # Set up mist controllers
+        mist_dict_1 = {"mister_pin": 5}
+        mist_dict_2 = {"mister_pin": 6}
+
+        self.mist_controllers= [MistController(mist_dict_1), MistController(mist_dict_2)]
+
+        for mister in self.mist_controllers:
+            mister.daemon = True
+            mister.start()
+
     # Handle the status update from the Met Office.
     def handle_met_status(self):
 
@@ -140,6 +155,12 @@ class ClockDisplay(threading.Thread):
 
             # fan commanded here to set the wind speed
             self.set_fan_speed_from_wind_speed(int(self.five_day_forecast[0]["wind_speed_day"]))
+            #self.set_mist_from_forecast(icon_dict[self.five_day_forecast[0]["day_weather_type"]]['mist'])
+            logger.debug("{} mist {}".format(self.five_day_forecast[0]["day_weather_type"],
+                                             icon_dict[self.five_day_forecast[0]["day_weather_type"]]['mist']))
+
+            for mister in self.mist_controllers:
+                mister.mist_queue.put_nowait(icon_dict[self.five_day_forecast[0]["day_weather_type"]]['mist'])
 
         # Weather Text drawn here.
         if len(self.weather_text) > 0:
@@ -175,14 +196,13 @@ class ClockDisplay(threading.Thread):
     # Pro-rata calculation of the RPM to turn fan at for the wind-speed.
     def set_fan_speed_from_wind_speed(self, wind_speed):
 
-        if wind_speed < 3:
-            logger.info("wind_speed <3, set to 0")
+        if wind_speed <= min_wind_speed:
+            logger.info("wind_speed <=3, set to 0")
             rpm = 0
-        elif wind_speed > 45:
+        elif wind_speed >= max_wind_speed:
             rpm = self.fan_controller.fan_dict["max_rpm"]
         else:
-            rpm = wind_speed/45 * (self.fan_controller.fan_dict["max_rpm"] - self.fan_controller.fan_dict["min_rpm"]) \
-                  + self.fan_controller.fan_dict["min_rpm"]
+            rpm = wind_speed/max_wind_speed * self.fan_controller.fan_dict["max_rpm"]
 
         logger.debug("Wind Speed of {} has RPM of {}".format(wind_speed, int(rpm)))
 
