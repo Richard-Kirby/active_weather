@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Raspberry Pi pin configuration:
 RST = 27
 DC = 25
-BL = 18
+BL = 23
 bus = 0 
 device = 0 
 
