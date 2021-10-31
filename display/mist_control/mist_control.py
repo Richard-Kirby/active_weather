@@ -48,7 +48,6 @@ class MistController(threading.Thread):
                 while not self.mist_queue.empty():
                     mist_pwm_ratio = self.mist_queue.get_nowait()
                     logger.debug("Mister Pin {} pwm {}".format(self.mist_dict["mister_pin"], int(mist_pwm_ratio*255)))
-                    print("Mister Pin {} pwm {}".format(self.mist_dict["mister_pin"], int(mist_pwm_ratio*255)))
 
                 self.pi.set_PWM_dutycycle(self.mist_dict["mister_pin"], int(mist_pwm_ratio * 255))
                 time.sleep(2)

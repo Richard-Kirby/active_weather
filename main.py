@@ -125,6 +125,8 @@ class ActiveWeatherClock(threading.Thread):
     # Main method that runs regularly in the thread.
     def run(self):
 
+        logger.debug("Starting main")
+
         while True:
             current_time = time.localtime()
 

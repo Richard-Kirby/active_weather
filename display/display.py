@@ -10,7 +10,8 @@ from .lib import LCD_1inch28 # Using the round 240 x 240 pixel Waveshare round d
 from PIL import Image, ImageDraw, ImageFont
 from .fan_control import FanController
 from .mist_control import MistController
-
+from .led_strip_control import LedStripControl
+import rpi_ws281x
 import time
 import threading
 import queue
@@ -119,6 +120,26 @@ class ClockDisplay(threading.Thread):
             mister.daemon = True
             mister.start()
 
+        # temperature settings
+        self.min_temp = -40
+        self.max_temp = 40
+
+        # LED strip configuration - NOTE: Using a lot of defaults from the library, frequency, DMA channel, etc.
+        LED_COUNT = 180  # Number of LED pixels.
+        LED_PIN = 18  # GPIO pin connected to the pixels (must support PWM!).
+
+        # Set up the LED Display
+        self.led_display = LedStripControl(LED_COUNT, LED_PIN)
+
+        self.led_display.pixel_clear()
+
+        time.sleep(4)
+
+        logger.debug("LED Object init")
+        self.led_display.daemon = True
+        self.led_display.start()
+        logger.debug("Clock Display init")
+
     # Handle the status update from the Met Office.
     def handle_met_status(self):
 
@@ -161,6 +182,10 @@ class ClockDisplay(threading.Thread):
 
             for mister in self.mist_controllers:
                 mister.mist_queue.put_nowait(icon_dict[self.five_day_forecast[0]["day_weather_type"]]['mist'])
+
+            # Set the thermometer colours
+            logger.debug("Temp to display on LED strip {}".format(self.five_day_forecast[0]['high_temp']))
+            self.set_thermometer_display(int(self.five_day_forecast[0]['high_temp']))
 
         # Weather Text drawn here.
         if len(self.weather_text) > 0:
@@ -207,6 +232,20 @@ class ClockDisplay(threading.Thread):
         logger.debug("Wind Speed of {} has RPM of {}".format(wind_speed, int(rpm)))
 
         self.fan_controller.rpm_queue.put_nowait(int(rpm))
+
+    # Set the thermometer display by sending commands to the LED Strip.
+    def set_thermometer_display(self, temperature):
+        #calc pixels to illuminate
+        pixels_to_display = int((temperature - self.min_temp) / (self.max_temp - self.min_temp) \
+                            * self.led_display.strip.numPixels())
+
+        logger.debug("Number of pixels {}".format(pixels_to_display))
+
+        pixels = []
+        for i in range(pixels_to_display):
+            pixels.append(rpi_ws281x.Color(75, 0, 0))
+
+        self.led_display.incoming_queue.put_nowait(pixels)
 
     # Displays date and time on the screen
     def display_time(self, time_to_display):
@@ -263,6 +302,14 @@ class ClockDisplay(threading.Thread):
 
                 # Write to the display - should be ready.
                 self.write_display()
+
+
+                #logger.debug("LED On")
+                #self.led_display.set_same_colour()
+                #time.sleep(1)
+                #logger.debug("LED Off")
+                #self.led_display.pixel_clear()
+                #time.sleep(1)
 
             time.sleep(1)
 

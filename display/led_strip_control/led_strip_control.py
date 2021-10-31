@@ -1,6 +1,13 @@
 import time
-import rpi_ws281x
 import random
+import threading
+import queue
+
+import logging
+# create logger
+logger = logging.getLogger(__name__)
+
+import rpi_ws281x
 
 # Gamma correction makes the colours perceived correctly.
 gamma8 = [
@@ -23,22 +30,27 @@ gamma8 = [
 
 
 # Class to  control the LED Strip based on the tweets.
-class LedStripControl:
+class LedStripControl(threading.Thread):
 
     # Set up the strip with the passed parameters.  The Gamma correction is done by the library, so it gete passed in.
-    def __init__(self, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness):
+    def __init__(self, led_count, led_pin):
 
-        self.strip = rpi_ws281x.Adafruit_NeoPixel(led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, gamma= gamma8)
+        # Init the threading
+        threading.Thread.__init__(self)
+
+        self.strip = rpi_ws281x.PixelStrip(led_count, led_pin, gamma=gamma8)
 
         # Intialize the library (must be called once before other functions).
         self.strip.begin()
+        self.incoming_queue = queue.Queue()
 
     def set_same_colour(self):
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, rpi_ws281x.Color(55, 0, 0))
         self.strip.show()
 
-    # Set the stip colours according to the passed in list.  Set Twinkle Ratio to 0 if you don't want any twinkle.
+    '''
+    # Set the strip colours according to the passed in list.  Set Twinkle Ratio to 0 if you don't want any twinkle.
     def set_strip_colours(self, tweet_list, twinkle_ratio = 0.25, tweeter_filter = None):
         for pixel in range (0, len(tweet_list)):
             #print(colour_list[pixel])
@@ -70,6 +82,7 @@ class LedStripControl:
            self.strip.setPixelColor(pixel, rpi_ws281x.Color(0, 0, 0))
 
         self.strip.show()
+    '''
 
     # Clears al the pixels.
     def pixel_clear(self):
@@ -79,15 +92,84 @@ class LedStripControl:
 
         self.strip.show()
 
+    def run(self):
+        try:
+            pixels =[]
+
+            while True:
+                # Get the latest commanded pixels from the queue
+                while not self.incoming_queue.empty():
+                    pixels = self.incoming_queue.get_nowait()
+                    self.pixel_clear()
+
+                logger.debug("LED Strip {}".format(len(pixels)))
+
+                # Get number of pixels to display - max is number of pixels.
+                pixels_to_display = min(len(pixels), self.strip.numPixels())
+
+                logger.debug("Pixels to display {}".format(pixels_to_display))
+
+                #self.set_same_colour()
+
+                #time.sleep(3)
+
+                # self.pixel_clear()
+
+                for i in range(0, pixels_to_display):
+                    # print(colour_list[pixel])
+                    # logger.debug("{} {}".format(i, pixels[i]))
+                    self.strip.setPixelColor(i, pixels[i])
+                    self.strip.show()
+                    time.sleep(0.1)
+
+                    '''
+                    twinkle_on_off = random.random()
+                    # print(twinkle_on_off)
+
+                    # If no filter, the show all pixels.
+                    if tweeter_filter is None:
+                        if float(twinkle_on_off) < float(twinkle_ratio):
+                            self.strip.setPixelColor(pixel, rpi_ws281x.Color(0, 0, 0))
+                        else:
+                            self.strip.setPixelColor(pixeli, rpi_ws281x.Color(*tweet_list[pixel].colour))
+
+                    # Check against the filter
+                    elif tweet_list[pixel].id is tweeter_filter.id:
+                        self.strip.setPixelColor(pixel, rpi_ws281x.Color(*tweet_list[pixel].colour))
+
+                    # Otherwise set to off.
+                    else:
+                        self.strip.setPixelColor(pixel, rpi_ws281x.Color(0, 0, 0))
+
+                    # self.strip.setPixelColor(pixel, rpi_ws281x.Color(*tweet_list[pixel].colour))
+                '''
+                # The below commented out bit sets the rest to dark.
+                for i in range(pixels_to_display, self.strip.numPixels()):
+                    self.strip.setPixelColor(i, rpi_ws281x.Color(0, 0, 0))
+                    #logger.debug(i)
+
+                self.strip.show()
+
+                #logger.debug("strip showed")
+                time.sleep(3)
+
+        except KeyboardInterrupt:
+            logger.exception("Keyboard interrupt")
+
+        except:
+            raise
+
+        finally:
+            # Todo: Can't get back to 0 RPM when shutdown by Ctrl-C
+            logger.error("finally")
 
 if __name__ == "__main__":
-
 
     # LED strip configuration:
     LED_COUNT      = 180      # Number of LED pixels.
     LED_PIN        = 18      # GPIO pin connected to the pixels (must support PWM!).
     LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-    LED_DMA        = 5       # DMA channel to use for generating signal (try 5)
+    LED_DMA        = 10       # DMA channel to use for generating signal (try 5)
     LED_BRIGHTNESS = 255  # Set to 0 for darkest and 255 for brightest
     LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 
@@ -96,9 +178,11 @@ if __name__ == "__main__":
     colours = [rpi_ws281x.Color(255,0,0) , rpi_ws281x.Color(255,0,0), rpi_ws281x.Color(255,255,0), rpi_ws281x.Color(0,255,0),
                rpi_ws281x.Color(0, 0, 255)]
 
-    tweet_strip.pixel_clear()
+    while True:
+        tweet_strip.pixel_clear()
 
-    time.sleep(4)
+        time.sleep(1)
 
-    #tweet_strip.set_strip_colours(colours)
-    tweet_strip.set_same_colour()
+        #tweet_strip.set_strip_colours(colours)
+        tweet_strip.set_same_colour()
+        time.sleep(1)
