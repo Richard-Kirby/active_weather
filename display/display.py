@@ -6,20 +6,21 @@ import sys
 import time
 
 import spidev as SPI
+import rpi_ws281x
+import time
+import threading
+import queue
+import colorsys
+
 from .lib import LCD_1inch28 # Using the round 240 x 240 pixel Waveshare round display
 from PIL import Image, ImageDraw, ImageFont
 from .fan_control import FanController
 from .mist_control import MistController
 from .led_strip_control import LedStripControl
-import rpi_ws281x
-import time
-import threading
-import queue
 
 import logging
 # create logger
 logger = logging.getLogger(__name__)
-
 
 # Raspberry Pi pin configuration:
 RST = 27
@@ -122,7 +123,8 @@ class ClockDisplay(threading.Thread):
 
         # temperature settings
         self.min_temp = -40
-        self.max_temp = 40
+        self.max_temp = 49
+        self.thermo_pixel_count = 90
 
         # LED strip configuration - NOTE: Using a lot of defaults from the library, frequency, DMA channel, etc.
         LED_COUNT = 180  # Number of LED pixels.
@@ -237,13 +239,38 @@ class ClockDisplay(threading.Thread):
     def set_thermometer_display(self, temperature):
         #calc pixels to illuminate
         pixels_to_display = int((temperature - self.min_temp) / (self.max_temp - self.min_temp) \
-                            * self.led_display.strip.numPixels())
+                            * self.thermo_pixel_count) + 1
 
         logger.debug("Number of pixels {}".format(pixels_to_display))
 
         pixels = []
+        below_zero_pixels = 40
+        above_zero_pixels = 49
+
+        # for i in range(self.led_display.strip.numPixels()):
+        # for i in range(below_zero_pixels + 1 + above_zero_pixels):
         for i in range(pixels_to_display):
-            pixels.append(rpi_ws281x.Color(75, 0, 0))
+
+            if i < below_zero_pixels:
+                hue = float((below_zero_pixels - i)/below_zero_pixels) * 0.33 + 0.33
+            else:
+                #print("else")
+                #hue = (49 - 41 + 40)/49 =
+                #       49- 89 +40
+                hue = float((above_zero_pixels - i + below_zero_pixels) / above_zero_pixels) * 0.10
+
+            rgb = []
+
+            if i== below_zero_pixels:
+                rgb = (100, 100, 100)
+            else:
+                for j in range(3):
+                    rgb.append(int(colorsys.hsv_to_rgb(hue, 0.75, 0.25)[j] *  255))
+
+            # logger.debug("pixel {} hue{}, rgb{}".format(i,hue, rgb))
+
+            colour = rpi_ws281x.Color(*rgb)
+            pixels.append(colour)
 
         self.led_display.incoming_queue.put_nowait(pixels)
 

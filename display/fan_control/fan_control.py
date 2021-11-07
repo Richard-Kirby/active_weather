@@ -70,7 +70,7 @@ class FanController(threading.Thread):
                 #                                                                current_pwm / 255 * 100, actual_rpm))
                 self.tacho_cb.reset_tally()
                 self.pi.set_PWM_dutycycle(self.fan_dict["fan_cmd_pin"], current_pwm)
-                time.sleep(2)
+                time.sleep(1)
 
         except KeyboardInterrupt:
             logger.exception("Keyboard interrupt")

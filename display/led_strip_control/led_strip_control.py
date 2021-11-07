@@ -100,14 +100,15 @@ class LedStripControl(threading.Thread):
                 # Get the latest commanded pixels from the queue
                 while not self.incoming_queue.empty():
                     pixels = self.incoming_queue.get_nowait()
+                    logger.debug("Colour of pixel 0 {}".format(pixels[0]))
                     self.pixel_clear()
 
-                logger.debug("LED Strip {}".format(len(pixels)))
+                # logger.debug("LED Strip {}".format(len(pixels)))
 
                 # Get number of pixels to display - max is number of pixels.
                 pixels_to_display = min(len(pixels), self.strip.numPixels())
 
-                logger.debug("Pixels to display {}".format(pixels_to_display))
+                #logger.debug("Pixels to display {}".format(pixels_to_display))
 
                 #self.set_same_colour()
 
@@ -119,8 +120,8 @@ class LedStripControl(threading.Thread):
                     # print(colour_list[pixel])
                     # logger.debug("{} {}".format(i, pixels[i]))
                     self.strip.setPixelColor(i, pixels[i])
-                    self.strip.show()
-                    time.sleep(0.1)
+                    # self.strip.show()
+                    #time.sleep(0.1)
 
                     '''
                     twinkle_on_off = random.random()
@@ -151,7 +152,7 @@ class LedStripControl(threading.Thread):
                 self.strip.show()
 
                 #logger.debug("strip showed")
-                time.sleep(3)
+                time.sleep(0.1)
 
         except KeyboardInterrupt:
             logger.exception("Keyboard interrupt")
@@ -180,7 +181,6 @@ if __name__ == "__main__":
 
     while True:
         tweet_strip.pixel_clear()
-
         time.sleep(1)
 
         #tweet_strip.set_strip_colours(colours)
